@@ -961,9 +961,94 @@
     let selectedDay = new Date().getDay();
     let sessionSets = {};
 
-    function renderCalendar(el) {
-      if (el) el.innerHTML = '<p class="muted text-xs">Calendar coming soon</p>';
+    const WORKOUT_SHORT = {
+      push: 'PUSH', pull: 'PULL', legs: 'LEGS', full: 'FULL',
+      cardio: 'RUN', boxing: 'BOX', rest: 'REST'
+    };
+
+    let calViewYear = new Date().getFullYear();
+    let calViewMonth = new Date().getMonth();
+
+    function renderCalendar(containerEl) {
+      if (!containerEl) return;
+      const today = new Date();
+      const sessions = load('sessions', []);
+      const boxSessions = load('boxing_sessions', []);
+      const loggedDates = new Set([
+        ...sessions.map(s => s.date),
+        ...boxSessions.map(s => s.date)
+      ]);
+
+      const firstDay = new Date(calViewYear, calViewMonth, 1);
+      const daysInMonth = new Date(calViewYear, calViewMonth + 1, 0).getDate();
+      const startDow = firstDay.getDay();
+      const monthName = firstDay.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+      const dayHeaders = ['S','M','T','W','T','F','S'].map(d =>
+        `<div class="cal-day-header">${d}</div>`
+      ).join('');
+
+      let cells = '';
+      for (let i = 0; i < startDow; i++) {
+        cells += `<div class="cal-cell cal-empty"></div>`;
+      }
+      for (let d = 1; d <= daysInMonth; d++) {
+        const cellDate = new Date(calViewYear, calViewMonth, d);
+        const dow = cellDate.getDay();
+        const plan = WEEKLY_PLAN[dow];
+        const isToday = cellDate.toDateString() === today.toDateString();
+        const isSelected = calViewYear === today.getFullYear()
+          && calViewMonth === today.getMonth()
+          && dow === selectedDay
+          && d === today.getDate();
+        const ds = `${calViewYear}-${String(calViewMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        const hasSession = loggedDates.has(ds);
+        const classes = ['cal-cell', isToday ? 'cal-today' : '', isSelected ? 'cal-selected' : ''].filter(Boolean).join(' ');
+
+        cells += `
+          <div class="${classes}" onclick="calSelectDate(${calViewYear},${calViewMonth},${d},${dow})">
+            <span class="cal-cell-num">${d}</span>
+            <span class="cal-cell-type" style="color:${plan.badge === 'rest' ? 'var(--border)' : ''}">${WORKOUT_SHORT[plan.badge]}</span>
+            ${hasSession ? '<span class="cal-dot"></span>' : ''}
+          </div>
+        `;
+      }
+
+      containerEl.innerHTML = `
+        <div class="cal-month-nav">
+          <button class="btn btn-ghost" style="padding:6px 10px;min-height:36px" onclick="calPrevMonth()">‹</button>
+          <span class="cal-month-label">${monthName.toUpperCase()}</span>
+          <button class="btn btn-ghost" style="padding:6px 10px;min-height:36px" onclick="calNextMonth()">›</button>
+        </div>
+        <div class="cal-grid">
+          ${dayHeaders}
+          ${cells}
+        </div>
+      `;
     }
+
+    window.calSelectDate = function(year, month, day, dow) {
+      selectedDay = dow;
+      sessionSets = {};
+      calViewYear = year;
+      calViewMonth = month;
+      renderWorkout();
+      setTimeout(() => {
+        const el = document.getElementById('exercise-list') || document.getElementById('cardio-section');
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 50);
+    };
+
+    window.calPrevMonth = function() {
+      calViewMonth--;
+      if (calViewMonth < 0) { calViewMonth = 11; calViewYear--; }
+      renderWorkout();
+    };
+    window.calNextMonth = function() {
+      calViewMonth++;
+      if (calViewMonth > 11) { calViewMonth = 0; calViewYear++; }
+      renderWorkout();
+    };
 
     function renderWorkout() {
       const el = document.getElementById('tab-workout');

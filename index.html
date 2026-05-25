@@ -483,9 +483,139 @@ navBtns.forEach(btn => {
 });
 
 // ══════════════════════════════════════════
+// TODAY TAB DATA & HELPERS
+// ══════════════════════════════════════════
+const WEEKLY_PLAN = {
+  0: { type: 'Rest', label: 'REST DAY', badge: 'rest' },
+  1: { type: 'Push + Boxing', label: 'PUSH DAY + BOXING', badge: 'push' },
+  2: { type: 'Cardio', label: 'CARDIO', badge: 'cardio' },
+  3: { type: 'Pull + Core', label: 'PULL + CORE', badge: 'pull' },
+  4: { type: 'Cardio', label: 'CARDIO', badge: 'cardio' },
+  5: { type: 'Legs + Boxing', label: 'LEGS + BOXING', badge: 'legs' },
+  6: { type: 'Full Body', label: 'FULL BODY', badge: 'full' }
+};
+
+function getGreeting() {
+  const h = new Date().getHours();
+  const profile = getProfile();
+  const name = profile.name || 'Champ';
+  if (h >= 21 || h < 1) return `Pre-shift time, ${name}.`;
+  if (h >= 1 && h < 7) return `Rise and grind, ${name}.`;
+  if (h >= 7 && h < 12) return `Morning grind, ${name}.`;
+  if (h >= 12 && h < 18) return `Good afternoon, ${name}.`;
+  return `Evening session, ${name}.`;
+}
+
+function getWeeklyTrainedCount() {
+  const sessions = load('sessions', []);
+  const boxing = load('boxing_sessions', []);
+  const allSessions = [...sessions, ...boxing];
+  const monday = new Date();
+  monday.setDate(monday.getDate() - ((monday.getDay() + 6) % 7));
+  monday.setHours(0,0,0,0);
+  return allSessions.filter(s => new Date(s.date) >= monday).length;
+}
+
+// ══════════════════════════════════════════
 // PLACEHOLDER RENDERS — replaced in later tasks
 // ══════════════════════════════════════════
-function renderToday() {}
+function renderToday() {
+  const el = document.getElementById('tab-today');
+  const stats = getStats();
+  const daily = getDailyData();
+  const today = new Date();
+  const plan = WEEKLY_PLAN[today.getDay()];
+  const trained = getWeeklyTrainedCount();
+  const dateLabel = today.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
+
+  el.innerHTML = `
+    <div style="padding-bottom:8px;border-bottom:1px solid var(--border);margin-bottom:16px">
+      <div style="font-size:12px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase">${dateLabel}</div>
+      <h1 style="font-size:28px;margin-top:4px">${getGreeting()}</h1>
+    </div>
+
+    <div class="stat-row">
+      <div class="stat-box">
+        <div class="stat-val"><input class="editable" id="stat-weight" value="${stats.weight}" style="font-size:24px;width:52px"> <span style="font-size:14px;font-family:'DM Sans'">kg</span></div>
+        <div class="stat-lbl">Weight</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val">${trained}</div>
+        <div class="stat-lbl">This Week</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val">${stats.streak}</div>
+        <div class="stat-lbl">Streak 🔥</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Today's Plan</div>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <span class="badge badge-accent">${plan.badge.toUpperCase()}</span>
+          <div style="font-family:'Bebas Neue';font-size:22px;margin-top:6px">${plan.label}</div>
+        </div>
+        ${plan.badge !== 'rest' ? `<button class="btn btn-accent" onclick="switchTab('workout')">START</button>` : `<span class="muted text-sm">Recover well.</span>`}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="flex-between mb-12">
+        <div class="card-title" style="margin:0">Daily Checklist</div>
+        <button class="btn btn-ghost" style="font-size:11px;padding:6px 10px" onclick="addCustomCheckItem()">+ ADD</button>
+      </div>
+      <div id="checklist-items"></div>
+    </div>
+
+    <button class="btn btn-ghost btn-full" onclick="openModal('sleep-overlay')">SLEEP & RECOVERY TIPS</button>
+  `;
+
+  document.getElementById('stat-weight').addEventListener('change', e => {
+    const s = getStats();
+    s.weight = parseFloat(e.target.value) || s.weight;
+    store('current_stats', s);
+  });
+
+  renderChecklist(daily);
+}
+
+function renderChecklist(daily) {
+  const el = document.getElementById('checklist-items');
+  if (!el) return;
+  el.innerHTML = daily.checklistItems.map((item, i) => `
+    <div class="check-item" onclick="toggleCheck(${i})">
+      <div class="check-dot${item.done ? ' done' : ''}" id="dot-${i}"></div>
+      <span class="check-label${item.done ? ' done' : ''}" id="lbl-${i}">${item.label}</span>
+    </div>
+  `).join('');
+}
+
+window.toggleCheck = function(i) {
+  const daily = getDailyData();
+  daily.checklistItems[i].done = !daily.checklistItems[i].done;
+  saveDailyData(daily);
+  if (daily.checklistItems[i].done) vibrate(50);
+  const dot = document.getElementById('dot-' + i);
+  const lbl = document.getElementById('lbl-' + i);
+  dot.classList.toggle('done', daily.checklistItems[i].done);
+  lbl.classList.toggle('done', daily.checklistItems[i].done);
+  dot.classList.add('pop');
+  setTimeout(() => dot.classList.remove('pop'), 200);
+};
+
+window.addCustomCheckItem = function() {
+  const label = prompt('Checklist item:');
+  if (!label || !label.trim()) return;
+  const item = { id: 'custom_' + Date.now(), label: label.trim(), done: false, custom: true };
+  const customs = load('custom_checklist', []);
+  customs.push(item);
+  store('custom_checklist', customs);
+  const daily = getDailyData();
+  daily.checklistItems.push(item);
+  saveDailyData(daily);
+  renderChecklist(daily);
+};
 function renderWorkout() {}
 function renderBoxing() {}
 function renderDiet() {}

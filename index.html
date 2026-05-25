@@ -538,7 +538,89 @@ window.dismissInstall = function() {
 // INIT
 // ══════════════════════════════════════════
 function midnightReset() {
-  // Implemented in Task 3
+  const last = load('lastOpened');
+  const today = dateStr();
+  if (last === today) return;
+  store('lastOpened', today);
+  if (!last) return;
+  const dailyData = load(todayKey(), {});
+  if (dailyData.checklistItems) {
+    dailyData.checklistItems = dailyData.checklistItems.map(i => ({ ...i, done: false }));
+  }
+  dailyData.macros = { protein: 0, calories: 0, water: 0 };
+  dailyData.mealsEaten = {};
+  store(todayKey(), dailyData);
+}
+
+function getProfile() {
+  return load('profile', {
+    name: '',
+    startDate: dateStr(),
+    startWeight: 82,
+    targetWeight: 72,
+    startPushups: 8,
+    startRun: 0
+  });
+}
+
+function getStats() {
+  return load('current_stats', {
+    weight: 82,
+    pushupPR: 8,
+    longestRun: 0,
+    streak: 0,
+    longestStreak: 0,
+    totalSessions: 0,
+    lastSessionDate: null
+  });
+}
+
+function getDailyData() {
+  const key = todayKey();
+  const existing = load(key);
+  if (existing) return existing;
+  const defaults = {
+    date: dateStr(),
+    checklistItems: defaultChecklist(),
+    macros: { protein: 0, calories: 0, water: 0 },
+    mealsEaten: {}
+  };
+  store(key, defaults);
+  return defaults;
+}
+
+function saveDailyData(data) {
+  store(todayKey(), data);
+}
+
+function defaultChecklist() {
+  const base = [
+    { id: 'water', label: 'Drank 8+ glasses of water', done: false },
+    { id: 'protein', label: 'Hit protein target (130–150g)', done: false },
+    { id: 'shower', label: 'Took cold shower before sleep', done: false },
+    { id: 'nophone', label: 'No phone 30 min before bed', done: false },
+    { id: 'flux', label: 'Installed f.lux / night mode on', done: false },
+    { id: 'breathing', label: 'Did 4-7-8 breathing before sleep', done: false },
+    { id: 'windows', label: 'Covered windows for dark room', done: false }
+  ];
+  const custom = load('custom_checklist', []);
+  return [...base, ...custom.map(c => ({ ...c, done: false }))];
+}
+
+function updateStreak() {
+  const stats = getStats();
+  const today = dateStr();
+  const yesterday = dateStr(new Date(Date.now() - 86400000));
+  if (stats.lastSessionDate === today) return;
+  if (stats.lastSessionDate === yesterday) {
+    stats.streak = (stats.streak || 0) + 1;
+  } else {
+    stats.streak = 1;
+  }
+  stats.longestStreak = Math.max(stats.streak, stats.longestStreak || 0);
+  stats.lastSessionDate = today;
+  stats.totalSessions = (stats.totalSessions || 0) + 1;
+  store('current_stats', stats);
 }
 
 function init() {
@@ -554,8 +636,65 @@ function init() {
 }
 
 function showOnboarding() {
-  // Implemented in Task 4
-  renderAll();
+  openModal('onboarding-overlay');
+  let step = 1;
+  const data = { name: '', startWeight: 82, startDate: dateStr() };
+
+  function render() {
+    const el = document.getElementById('onboarding-steps');
+    if (step === 1) {
+      el.innerHTML = `
+        <p class="muted text-sm mb-12">Step 1 of 3</p>
+        <h3 class="heading" style="font-size:22px;margin-bottom:12px">WHAT'S YOUR NAME?</h3>
+        <p class="muted text-sm mb-12">Optional — used for greetings</p>
+        <input class="input" id="ob-name" placeholder="Leave blank to be called Champ" maxlength="30">
+        <button class="btn btn-accent btn-full mt-12" onclick="obNext1()">NEXT</button>
+      `;
+    } else if (step === 2) {
+      el.innerHTML = `
+        <p class="muted text-sm mb-12">Step 2 of 3</p>
+        <h3 class="heading" style="font-size:22px;margin-bottom:12px">CURRENT WEIGHT?</h3>
+        <input class="input" id="ob-weight" type="number" placeholder="82" value="82" min="40" max="200">
+        <p class="muted text-xs mt-8">in kilograms</p>
+        <button class="btn btn-accent btn-full mt-12" onclick="obNext2()">NEXT</button>
+      `;
+    } else {
+      el.innerHTML = `
+        <p class="muted text-sm mb-12">Step 3 of 3</p>
+        <h3 class="heading" style="font-size:22px;margin-bottom:12px">START DATE?</h3>
+        <input class="input" id="ob-date" type="date" value="${dateStr()}">
+        <button class="btn btn-accent btn-full mt-12" onclick="obFinish()">LET'S GO</button>
+      `;
+    }
+  }
+
+  window.obNext1 = () => {
+    data.name = document.getElementById('ob-name').value.trim();
+    step = 2; render();
+  };
+  window.obNext2 = () => {
+    data.startWeight = parseFloat(document.getElementById('ob-weight').value) || 82;
+    step = 3; render();
+  };
+  window.obFinish = () => {
+    data.startDate = document.getElementById('ob-date').value || dateStr();
+    const profile = {
+      name: data.name,
+      startDate: data.startDate,
+      startWeight: data.startWeight,
+      targetWeight: 72,
+      startPushups: 8,
+      startRun: 0
+    };
+    store('profile', profile);
+    const stats = getStats();
+    stats.weight = data.startWeight;
+    store('current_stats', stats);
+    closeModal('onboarding-overlay');
+    renderAll();
+  };
+
+  render();
 }
 
 init();

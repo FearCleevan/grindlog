@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "app.vercel.grindlog_chi.twa",
+        "sha256_cert_fingerprints": ["1E:7B:85:C5:6B:A9:5F:B1:6B:D3:71:9E:57:C1:B5:06:0B:6F:36:D2:29:C4:83:19:71:D0:B7:E2:05:A5:0F:C1"]
+      }
+    }]

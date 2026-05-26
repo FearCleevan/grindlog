@@ -16,7 +16,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="GrindLog">
 
-  <title>GrindLog</title>
+  <title>GrindLog – Diet</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,25 +28,6 @@
 </head>
 
 <body>
-
-  <!-- ══════════ ONBOARDING ══════════ -->
-  <div class="overlay" id="onboarding-overlay">
-    <div class="modal">
-      <h2 class="modal-title">GRINDLOG</h2>
-      <div id="onboarding-steps"></div>
-    </div>
-  </div>
-
-  <!-- ══════════ SLEEP MODAL ══════════ -->
-  <div class="overlay" id="sleep-overlay">
-    <div class="modal">
-      <div class="flex-between mb-12">
-        <h2 class="modal-title">SLEEP & RECOVERY</h2>
-        <button class="btn btn-ghost" onclick="breathingReset();closeModal('sleep-overlay')">✕</button>
-      </div>
-      <div id="sleep-content"></div>
-    </div>
-  </div>
 
   <!-- ══════════ INSTALL BANNER ══════════ -->
   <div id="install-banner"
@@ -60,12 +41,12 @@
 
   <!-- ══════════ APP ══════════ -->
   <main id="app">
-    <section id="tab-today" class="tab active"></section>
+    <section id="tab-diet" class="tab active"></section>
   </main>
 
   <!-- ══════════ BOTTOM NAV ══════════ -->
   <nav id="bottom-nav">
-    <a class="nav-btn active" href="index.html">
+    <a class="nav-btn" href="index.html">
       <svg width="22" height="22" viewBox="0 0 1024 1024" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
         <path
           d="M650.564314 118.483673s25.088756-95.013547-28.002289-97.117765-120.102302-2.75167-178.049235 25.088756-103.430419 136.936048-103.43042 136.936048-103.430419 89.348344-120.102302 206.860839a784.387813 784.387813 0 0 0-10.197366 176.106881s-35.124258 80.122156-1.294903 114.598962 109.257485 54.062222 109.257485 54.062222 90.319521 74.456953 190.027093 70.734106a495.948052 495.948052 0 0 0 190.998271-53.091045s107.153267 160.244312 159.273134 162.995982 40.951324-59.565562 40.951324-59.565563l0.971178-323.725882s0.809315-75.428131-66.201943-104.401597a125.443779 125.443779 0 0 0-117.350632 6.474517s-60.53674-52.119867-131.270846-33.505628a434.440134 434.440134 0 0 0-127.547998 59.565562 187.922875 187.922875 0 0 0 7.445696-69.924791c-3.722848-36.257299-46.616527-97.117765-16.186294-162.995982s71.705283-43.702994 71.705283-43.702994a55.195263 55.195263 0 0 0 40.951324 24.279441 108.286308 108.286308 0 0 0 51.310552-17.64306s47.425842 13.110898 56.813893-18.614238 3.399122-41.436913-20.071005-53.414771z" />
@@ -104,7 +85,7 @@
       </svg>
       Boxing
     </a>
-    <a class="nav-btn" href="diet.html">
+    <a class="nav-btn active" href="diet.html">
       <svg width="22" height="22" viewBox="0 0 1024 1024" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
         <path d="M64 448h896v80H64z" />
         <path d="M128 528c0 0 64 352 384 352s384-352 384-352H128z" />
@@ -126,9 +107,15 @@
   <script src="js/core.js"></script>
   <script src="js/data.js"></script>
   <script src="js/pwa.js"></script>
-  <script src="js/today.js"></script>
-  <script src="js/onboarding.js"></script>
-  <script src="js/app.js"></script>
+  <script src="js/diet.js"></script>
+  <script>
+    (function () {
+      if (!load('profile')) { window.location.href = 'index.html'; return; }
+      renderDiet();
+      registerSW();
+      handleInstallPrompt();
+    })();
+  </script>
 </body>
 
 </html>

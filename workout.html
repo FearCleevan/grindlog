@@ -16,7 +16,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="GrindLog">
 
-  <title>GrindLog</title>
+  <title>GrindLog – Workout</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -29,22 +29,14 @@
 
 <body>
 
-  <!-- ══════════ ONBOARDING ══════════ -->
-  <div class="overlay" id="onboarding-overlay">
-    <div class="modal">
-      <h2 class="modal-title">GRINDLOG</h2>
-      <div id="onboarding-steps"></div>
-    </div>
-  </div>
-
-  <!-- ══════════ SLEEP MODAL ══════════ -->
-  <div class="overlay" id="sleep-overlay">
-    <div class="modal">
-      <div class="flex-between mb-12">
-        <h2 class="modal-title">SLEEP & RECOVERY</h2>
-        <button class="btn btn-ghost" onclick="breathingReset();closeModal('sleep-overlay')">✕</button>
+  <!-- ══════════ REST TIMER OVERLAY ══════════ -->
+  <div class="overlay" id="rest-overlay" style="align-items:center;justify-content:center">
+    <div class="modal" style="border:1px solid var(--border);max-width:300px;text-align:center">
+      <div class="card-title" style="text-align:center">REST</div>
+      <div class="timer-display" id="rest-countdown">1:00</div>
+      <div class="btn-row mt-12" style="justify-content:center">
+        <button class="btn btn-ghost" onclick="skipRest()">SKIP</button>
       </div>
-      <div id="sleep-content"></div>
     </div>
   </div>
 
@@ -60,12 +52,12 @@
 
   <!-- ══════════ APP ══════════ -->
   <main id="app">
-    <section id="tab-today" class="tab active"></section>
+    <section id="tab-workout" class="tab active"></section>
   </main>
 
   <!-- ══════════ BOTTOM NAV ══════════ -->
   <nav id="bottom-nav">
-    <a class="nav-btn active" href="index.html">
+    <a class="nav-btn" href="index.html">
       <svg width="22" height="22" viewBox="0 0 1024 1024" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
         <path
           d="M650.564314 118.483673s25.088756-95.013547-28.002289-97.117765-120.102302-2.75167-178.049235 25.088756-103.430419 136.936048-103.43042 136.936048-103.430419 89.348344-120.102302 206.860839a784.387813 784.387813 0 0 0-10.197366 176.106881s-35.124258 80.122156-1.294903 114.598962 109.257485 54.062222 109.257485 54.062222 90.319521 74.456953 190.027093 70.734106a495.948052 495.948052 0 0 0 190.998271-53.091045s107.153267 160.244312 159.273134 162.995982 40.951324-59.565562 40.951324-59.565563l0.971178-323.725882s0.809315-75.428131-66.201943-104.401597a125.443779 125.443779 0 0 0-117.350632 6.474517s-60.53674-52.119867-131.270846-33.505628a434.440134 434.440134 0 0 0-127.547998 59.565562 187.922875 187.922875 0 0 0 7.445696-69.924791c-3.722848-36.257299-46.616527-97.117765-16.186294-162.995982s71.705283-43.702994 71.705283-43.702994a55.195263 55.195263 0 0 0 40.951324 24.279441 108.286308 108.286308 0 0 0 51.310552-17.64306s47.425842 13.110898 56.813893-18.614238 3.399122-41.436913-20.071005-53.414771z" />
@@ -74,7 +66,7 @@
       </svg>
       Today
     </a>
-    <a class="nav-btn" href="workout.html">
+    <a class="nav-btn active" href="workout.html">
       <svg width="22" height="22" viewBox="0 -131.5 1287 1287" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
         <path
           d="M1128.170143 656.727291h-9.881771v147.19722a55.996704 55.996704 0 0 1-61.761071 48.791246c-33.762719 0-61.761071-21.822245-61.761071-48.791246V315.188568c0-26.969001 27.586612-48.791246 61.761071-48.791246a55.996704 55.996704 0 0 1 61.761071 48.791246v168.607724h9.881771c60.114109 0 108.905355 38.909475 108.905356 86.87724s-48.997116 87.08311-108.905356 87.08311M898.213089 1023.999794a97.582492 97.582492 0 0 1-97.788363-97.582492V193.107518a97.685427 97.685427 0 1 1 195.370855 0v732.486303a97.582492 97.582492 0 0 1-97.582492 97.788362z m-440.562307-367.272503v-195.370855h342.773944v195.370855H457.650782z m-95.729661 366.243152a97.582492 97.582492 0 0 1-97.582492-97.582492V193.107518a97.582492 97.582492 0 0 1 97.582492-97.582493 95.93553 95.93553 0 0 1 95.729661 97.582493v732.486303a95.93553 95.93553 0 0 1-95.729661 97.788362z m-157.078991-170.872297c-33.968589 0-61.761071-21.822245-61.761071-48.791246v-146.579609h-9.675901c-61.761071 0-110.140577-38.909475-110.140577-87.08311s49.202987-86.87724 110.140577-86.87724h9.675901v-168.607724c0-26.969001 27.792482-48.791246 61.761071-48.791246a53.938002 53.938002 0 0 1 59.290629 48.791246v488.324202a53.938002 53.938002 0 0 1-59.290629 49.820597z" />
@@ -126,9 +118,15 @@
   <script src="js/core.js"></script>
   <script src="js/data.js"></script>
   <script src="js/pwa.js"></script>
-  <script src="js/today.js"></script>
-  <script src="js/onboarding.js"></script>
-  <script src="js/app.js"></script>
+  <script src="js/workout.js"></script>
+  <script>
+    (function () {
+      if (!load('profile')) { window.location.href = 'index.html'; return; }
+      renderWorkout();
+      registerSW();
+      handleInstallPrompt();
+    })();
+  </script>
 </body>
 
 </html>

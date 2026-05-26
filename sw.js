@@ -1,4 +1,4 @@
-const CACHE = 'grindlog-v1';
+const CACHE = 'grindlog-v2';
 const ASSETS = [
   '/',
   '/index.html',

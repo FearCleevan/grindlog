@@ -2003,12 +2003,12 @@
     };
 
     function renderAll() {
-      renderToday();
-      renderWorkout();
-      renderBoxing();
-      renderDiet();
-      renderProgress();
-      renderSleepModal();
+      try { renderToday(); } catch (e) { console.error('renderToday:', e); }
+      try { renderWorkout(); } catch (e) { console.error('renderWorkout:', e); }
+      try { renderBoxing(); } catch (e) { console.error('renderBoxing:', e); }
+      try { renderDiet(); } catch (e) { console.error('renderDiet:', e); }
+      try { renderProgress(); } catch (e) { console.error('renderProgress:', e); }
+      try { renderSleepModal(); } catch (e) { console.error('renderSleepModal:', e); }
     }
 
     // ══════════════════════════════════════════

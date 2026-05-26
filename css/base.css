@@ -1,0 +1,63 @@
+/* ── Design Tokens ── */
+:root {
+  --bg: #0d0d0d;
+  --surface: #1a1a1a;
+  --border: #2a2a2a;
+  --accent: #e63946;
+  --text: #f0f0f0;
+  --muted: #888;
+}
+
+/* ── Reset ── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html { height: 100%; }
+
+body {
+  min-height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 16px;
+  max-width: 430px;
+  margin: 0 auto;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Typography ── */
+h1, h2, h3, .heading {
+  font-family: 'Bebas Neue', sans-serif;
+  letter-spacing: 0.05em;
+  font-weight: 400;
+}
+
+/* ── Animations ── */
+@keyframes pop {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.25); }
+}
+.pop { animation: pop 0.2s ease; }
+
+@keyframes pulse-border {
+  0%, 100% { border-color: var(--border); }
+  50% { border-color: var(--accent); }
+}
+.timer-active { animation: pulse-border 1.5s infinite; }
+
+/* ── Utilities ── */
+.muted { color: var(--muted); }
+.accent { color: var(--accent); }
+.mt-8 { margin-top: 8px; }
+.mt-12 { margin-top: 12px; }
+.mb-12 { margin-bottom: 12px; }
+.text-sm { font-size: 13px; }
+.text-xs { font-size: 11px; }
+.flex { display: flex; }
+.flex-between { display: flex; justify-content: space-between; align-items: center; }
+.gap-8 { gap: 8px; }
+.w-full { width: 100%; }

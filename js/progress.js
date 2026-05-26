@@ -4,13 +4,16 @@ function renderProgress() {
   const el = document.getElementById('tab-progress');
   const stats = getStats();
   const profile = getProfile();
+  const plan = profile.plan || {};
   const tests = load('progress_tests', []);
   const milestones = load('milestones', MILESTONES.map(m => ({ ...m, done: false })));
 
-  const pushPct = Math.min(100, (stats.pushupPR / 20) * 100);
-  const runPct = Math.min(100, (stats.longestRun / 30) * 100);
-  const weightStart = profile.startWeight || 82;
-  const weightTarget = 72;
+  const pushupTarget = profile.fitnessLevel === 'beginner' ? 15 : profile.fitnessLevel === 'advanced' ? 30 : 20;
+  const runTarget    = profile.goal === 'boxing' ? 20 : 30;
+  const weightStart  = profile.startWeight  || 82;
+  const weightTarget = profile.targetWeight || 72;
+  const pushPct = Math.min(100, (stats.pushupPR / pushupTarget) * 100);
+  const runPct  = Math.min(100, (stats.longestRun / runTarget)  * 100);
   const weightCur = stats.weight || weightStart;
   const weightLost = weightStart - weightCur;
   const weightTotal = weightStart - weightTarget;
@@ -22,7 +25,7 @@ function renderProgress() {
     <div class="card">
       <div class="card-title">Push-up Goal</div>
       <div class="flex-between">
-        <div><span style="font-family:'Bebas Neue';font-size:28px"><input class="editable" id="prog-pushup" value="${stats.pushupPR}" style="font-size:28px;width:52px"></span> <span class="muted text-sm">/ 20 reps</span></div>
+        <div><span style="font-family:'Bebas Neue';font-size:28px"><input class="editable" id="prog-pushup" value="${stats.pushupPR}" style="font-size:28px;width:52px"></span> <span class="muted text-sm">/ ${pushupTarget} reps</span></div>
         <span class="badge${pushPct >= 100 ? ' badge-accent' : ''}">${pushPct >= 100 ? 'DONE' : Math.round(pushPct) + '%'}</span>
       </div>
       <div class="prog-track"><div class="prog-fill" style="width:${pushPct}%"></div></div>
@@ -31,7 +34,7 @@ function renderProgress() {
     <div class="card">
       <div class="card-title">Running Goal</div>
       <div class="flex-between">
-        <div><span style="font-family:'Bebas Neue';font-size:28px"><input class="editable" id="prog-run" value="${stats.longestRun}" style="font-size:28px;width:52px"></span> <span class="muted text-sm">/ 30 min</span></div>
+        <div><span style="font-family:'Bebas Neue';font-size:28px"><input class="editable" id="prog-run" value="${stats.longestRun}" style="font-size:28px;width:52px"></span> <span class="muted text-sm">/ ${runTarget} min</span></div>
         <span class="badge${runPct >= 100 ? ' badge-accent' : ''}">${runPct >= 100 ? 'DONE' : Math.round(runPct) + '%'}</span>
       </div>
       <div class="prog-track"><div class="prog-fill" style="width:${runPct}%"></div></div>
@@ -100,6 +103,7 @@ function renderProgress() {
     <div class="collapsible">
       <div class="collapsible-trigger" onclick="toggleCollapsible(this)">MONTHLY CHECKPOINTS <span class="collapsible-arrow">▼</span></div>
       <div class="collapsible-body">
+        <p class="muted text-sm mb-12">Program: ${plan.difficulty || 'FOUNDATION'} · ${plan.focus || 'GENERAL'}</p>
         ${MONTHLY_TARGETS.map(m => `
           <div style="padding:10px 0;border-bottom:1px solid var(--border)">
             <div style="font-family:'Bebas Neue';font-size:16px;color:var(--accent)">Month ${m.month}</div>

@@ -90,7 +90,7 @@ window.calNextMonth = function () {
 function renderWorkout() {
   const el = document.getElementById('tab-workout');
   const plan = WEEKLY_PLAN[selectedDay];
-  const exercises = EXERCISES[plan.badge] || [];
+  const exercises = getPersonalizedExercises()[plan.badge] || [];
 
   const dayStrip = DAYS.map((d, i) => {
     const p = WEEKLY_PLAN[i];
@@ -181,12 +181,13 @@ window.toggleSet = function (name, si) {
   if (!sessionSets[name]) return;
   sessionSets[name][si] = !sessionSets[name][si];
   vibrate(30);
-  renderExerciseList(EXERCISES[WEEKLY_PLAN[selectedDay].badge] || []);
+  renderExerciseList(getPersonalizedExercises()[WEEKLY_PLAN[selectedDay].badge] || []);
   if (sessionSets[name][si]) showRestTimer();
 };
 
 function renderExerciseLibrary() {
-  const all = [...EXERCISES.push, ...EXERCISES.pull, ...EXERCISES.legs];
+  const ex = getPersonalizedExercises();
+  const all = [...(ex.push || []), ...(ex.pull || []), ...(ex.legs || [])];
   const unique = all.filter((e, i, a) => a.findIndex(x => x.name === e.name) === i);
   return unique.map(ex => `
     <div style="padding:10px 0;border-bottom:1px solid var(--border)">
@@ -228,7 +229,7 @@ window.skipRest = function () {
 
 window.finishSession = function (type) {
   const sessions = load('sessions', []);
-  const exercises = (EXERCISES[type] || []).map(ex => ({
+  const exercises = (getPersonalizedExercises()[type] || []).map(ex => ({
     name: ex.name,
     sets: (sessionSets[ex.name] || []).filter(Boolean).length + '/' + ex.sets
   }));

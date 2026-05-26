@@ -5,6 +5,9 @@ function renderDiet() {
   const daily = getDailyData();
   const macros = daily.macros || { protein: 0, calories: 0, water: 0 };
   const meals = daily.mealsEaten || {};
+  const profile = getProfile();
+  const planCalories = (profile.plan && profile.plan.calories) || 1900;
+  const planProtein  = (profile.plan && profile.plan.protein)  || 140;
 
   el.innerHTML = `
     <h1 class="section-header">DIET</h1>
@@ -13,13 +16,13 @@ function renderDiet() {
       <div class="card-title">Daily Macros</div>
 
       <div style="margin-bottom:14px">
-        <div class="flex-between"><span class="text-sm">Protein</span><span class="text-sm"><input class="editable" id="proto-input" value="${macros.protein}" style="width:40px"> / 140g</span></div>
-        <div class="prog-track"><div class="prog-fill" id="proto-bar" style="width:${Math.min(100, (macros.protein / 140) * 100)}%"></div></div>
+        <div class="flex-between"><span class="text-sm">Protein</span><span class="text-sm"><input class="editable" id="proto-input" value="${macros.protein}" style="width:40px"> / ${planProtein}g</span></div>
+        <div class="prog-track"><div class="prog-fill" id="proto-bar" style="width:${Math.min(100, (macros.protein / planProtein) * 100)}%"></div></div>
       </div>
 
       <div style="margin-bottom:14px">
-        <div class="flex-between"><span class="text-sm">Calories</span><span class="text-sm"><input class="editable" id="kcal-input" value="${macros.calories}" style="width:48px"> / 1900</span></div>
-        <div class="prog-track"><div class="prog-fill" id="kcal-bar" style="width:${Math.min(100, (macros.calories / 1900) * 100)}%"></div></div>
+        <div class="flex-between"><span class="text-sm">Calories</span><span class="text-sm"><input class="editable" id="kcal-input" value="${macros.calories}" style="width:48px"> / ${planCalories}</span></div>
+        <div class="prog-track"><div class="prog-fill" id="kcal-bar" style="width:${Math.min(100, (macros.calories / planCalories) * 100)}%"></div></div>
       </div>
 
       <div class="flex-between" style="align-items:center">
@@ -89,10 +92,10 @@ function renderDiet() {
   `;
 
   document.getElementById('proto-input').addEventListener('change', e => {
-    updateMacro('protein', parseFloat(e.target.value) || 0, 140, 'proto-bar');
+    updateMacro('protein', parseFloat(e.target.value) || 0, planProtein, 'proto-bar');
   });
   document.getElementById('kcal-input').addEventListener('change', e => {
-    updateMacro('calories', parseFloat(e.target.value) || 0, 1900, 'kcal-bar');
+    updateMacro('calories', parseFloat(e.target.value) || 0, planCalories, 'kcal-bar');
   });
 }
 
